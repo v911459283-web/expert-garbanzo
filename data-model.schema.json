@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/inbody/data-model.schema.json",
+  "title": "InBody 健康管理資料模型",
+  "type": "object",
+  "required": ["client", "assessments", "prescriptions", "followUps", "nutritionDailyLogs", "reports", "careEvents"],
+  "properties": {
+    "client": { "$ref": "#/$defs/client" },
+    "assessments": { "type": "array", "items": { "$ref": "#/$defs/assessment" } },
+    "prescriptions": { "type": "array", "items": { "$ref": "#/$defs/prescription" } },
+    "followUps": { "type": "array", "items": { "$ref": "#/$defs/followUp" } },
+    "nutritionDailyLogs": { "type": "array", "items": { "$ref": "#/$defs/nutritionDailyLog" } },
+    "reports": { "type": "array", "items": { "$ref": "#/$defs/report" } },
+    "careEvents": { "type": "array", "items": { "$ref": "#/$defs/careEvent" } }
+  },
+  "$defs": {
+    "client": {
+      "type": "object",
+      "required": ["id", "name", "health", "function", "communication", "preferences", "nutrition"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "birthDate": { "type": "string", "format": "date" },
+        "sex": { "type": "string" },
+        "population": { "type": "string" },
+        "health": {
+          "type": "object",
+          "required": ["conditions", "medications", "redFlags", "clearedForExercise"],
+          "properties": {
+            "conditions": { "type": "array", "items": { "type": "string" } },
+            "medications": { "type": "array", "items": { "type": "string" } },
+            "redFlags": { "type": "array", "items": { "type": "string" } },
+            "clearedForExercise": { "type": ["boolean", "null"] }
+          }
+        },
+        "function": { "$ref": "#/$defs/exerciseAssessment" },
+        "communication": { "type": "object", "additionalProperties": true },
+        "preferences": { "type": "object", "additionalProperties": true },
+        "nutrition": { "$ref": "#/$defs/nutritionAssessment" },
+        "nutritionAssessment": { "$ref": "#/$defs/nutritionCareAssessment" }
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "required": ["id", "date", "bodyComposition", "riskScreening"],
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "bodyComposition": { "$ref": "#/$defs/bodyComposition" },
+        "clientId": { "type": "string" },
+        "device": { "type": "object", "properties": { "brand": { "type": "string" }, "model": { "type": "string" }, "method": { "enum": ["BIA", "other"] } }, "additionalProperties": false },
+        "segmental": { "$ref": "#/$defs/segmental" },
+        "functional": { "$ref": "#/$defs/functionalAssessment" },
+        "nutrition": { "$ref": "#/$defs/nutritionCareAssessment" },
+        "vitalSigns": { "type": "object", "additionalProperties": true },
+        "functionalTests": { "type": "object", "additionalProperties": true },
+        "riskScreening": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "bodyComposition": {
+      "type": "object",
+      "required": ["weight", "bmi", "pbf", "fm", "smm", "ffm", "bmr", "whr", "segmental"],
+      "properties": {
+        "weight": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "height": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "bmi": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "pbf": { "type": ["number", "null"], "minimum": 0, "maximum": 70 },
+        "fm": { "type": ["number", "null"], "minimum": 0 },
+        "smm": { "type": ["number", "null"], "minimum": 0 },
+        "ffm": { "type": ["number", "null"], "minimum": 0 },
+        "bmr": { "type": ["number", "null"], "minimum": 0 },
+        "whr": { "type": ["number", "null"], "minimum": 0 },
+        "asmi": { "type": ["number", "null"], "minimum": 0 },
+        "bodyWater": { "type": ["number", "null"], "minimum": 0 }
+        ,"rawData": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "segmental": {
+      "type": "object",
+      "properties": {
+        "rightArm": { "$ref": "#/$defs/segment" }, "leftArm": { "$ref": "#/$defs/segment" },
+        "trunk": { "$ref": "#/$defs/segment" }, "rightLeg": { "$ref": "#/$defs/segment" }, "leftLeg": { "$ref": "#/$defs/segment" }
+      },
+      "additionalProperties": false
+    },
+    "segment": {
+      "type": "object",
+      "properties": {
+        "leanMassKg": { "type": ["number", "null"], "minimum": 0 },
+        "percentage": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "functionalAssessment": {
+      "type": "object",
+      "properties": {
+        "functionalLevel": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "walkingAbility": { "type": "string" },
+        "walkingTest": { "$ref": "#/$defs/walkingTest" },
+        "sitToStand": { "$ref": "#/$defs/sitToStandTest" },
+        "balance": { "$ref": "#/$defs/balanceTest" },
+        "gripStrength": { "$ref": "#/$defs/gripTest" },
+        "instructionLevel": { "type": "string" },
+        "caregiverSupport": { "enum": ["none", "partial", "full", "required"] }
+      },
+      "additionalProperties": true
+    },
+    "walkingTest": {
+      "type": "object",
+      "properties": { "testType": { "type": "string" }, "distanceMeters": { "type": ["number", "null"], "minimum": 0 }, "timeSeconds": { "type": ["number", "null"], "minimum": 0 }, "rpe": { "type": ["number", "null"], "minimum": 0, "maximum": 10 }, "valid": { "type": "boolean" } },
+      "additionalProperties": true
+    },
+    "sitToStandTest": {
+      "type": "object",
+      "properties": { "testType": { "const": "30s_sit_to_stand" }, "repetitions": { "type": ["number", "null"], "minimum": 0 }, "assistance": { "type": "string" }, "pain": { "type": ["number", "null"], "minimum": 0, "maximum": 10 }, "rpe": { "type": ["number", "null"], "minimum": 0, "maximum": 10 }, "valid": { "type": "boolean" } },
+      "additionalProperties": true
+    },
+    "balanceTest": {
+      "type": "object",
+      "properties": { "status": { "type": "string" }, "assistance": { "type": "string" }, "timeSeconds": { "type": ["number", "null"], "minimum": 0 }, "lossOfBalance": { "type": ["boolean", "null"] } },
+      "additionalProperties": true
+    },
+    "gripTest": {
+      "type": "object",
+      "properties": { "rightKg": { "type": ["number", "null"], "minimum": 0 }, "leftKg": { "type": ["number", "null"], "minimum": 0 }, "dominantHand": { "type": ["string", "null"] }, "device": { "type": ["string", "null"] }, "protocol": { "type": ["string", "null"] }, "attempts": { "type": ["integer", "null"], "minimum": 0 }, "bestValue": { "type": ["number", "null"], "minimum": 0 } },
+      "additionalProperties": true
+    },
+    "exerciseAssessment": {
+      "type": "object",
+      "required": ["activityMinutesPerDay", "experience", "rpe", "strength", "balance", "functionalLevel"],
+      "properties": {
+        "activityMinutesPerDay": { "type": "number", "minimum": 0 },
+        "experience": { "type": "string" },
+        "rpe": { "type": "number", "minimum": 0, "maximum": 10 },
+        "strength": { "type": "string" },
+        "balance": { "type": "string" },
+        "functionalLevel": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "caregiverRequired": { "type": "boolean" }
+      }
+    },
+    "nutritionAssessment": {
+      "type": "object",
+      "required": ["mealsPerDay", "vegetables", "sugaryDrinksPerDay", "proteinAtBreakfast", "allergies"],
+      "properties": {
+        "mealsPerDay": { "type": "integer", "minimum": 0 },
+        "vegetables": { "type": "string" },
+        "sugaryDrinksPerDay": { "type": "number", "minimum": 0 },
+        "proteinAtBreakfast": { "type": "boolean" },
+        "allergies": { "type": "array", "items": { "type": "string" } },
+        "behaviorGoals": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "nutritionCareAssessment": {
+      "type": "object",
+      "required": ["mealPattern", "foodGroups", "beverages", "snacks", "eatingOut", "preferences", "allergies", "intolerances", "barriers", "strengths", "caregiverInvolvement"],
+      "properties": {
+        "mealPattern": { "type": "object", "additionalProperties": true },
+        "foodGroups": { "type": "object", "additionalProperties": true },
+        "beverages": { "type": "object", "additionalProperties": true },
+        "snacks": { "type": "object", "additionalProperties": true },
+        "eatingOut": { "type": "object", "additionalProperties": true },
+        "preferences": { "type": "array", "items": { "type": "string" } },
+        "allergies": { "type": "array", "items": { "type": "string" } },
+        "intolerances": { "type": "array", "items": { "type": "string" } },
+        "barriers": { "type": "array", "items": { "type": "string" } },
+        "strengths": { "type": "array", "items": { "type": "string" } },
+        "caregiverInvolvement": { "type": "string" },
+        "nutritionRisk": { "enum": ["low", "moderate", "high"] },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "prescription": {
+      "type": "object",
+      "required": ["id", "assessmentId", "ruleVersion", "status", "exercise", "nutrition", "safetyRules"],
+      "properties": {
+        "id": { "type": "string" },
+        "assessmentId": { "type": "string" },
+        "ruleVersion": { "type": "string" },
+        "status": { "enum": ["blocked", "professional_review", "allowed"] },
+        "exercise": { "type": "object", "additionalProperties": true },
+        "nutrition": { "type": "object", "additionalProperties": true },
+        "safetyRules": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "exerciseConstraint": {
+      "type": "object",
+      "required": ["exerciseId", "allowed", "supervision", "complexity"],
+      "properties": {
+        "exerciseId": { "type": "string" },
+        "allowed": { "type": "boolean" },
+        "reason": { "type": "string" },
+        "supervision": { "enum": ["none", "recommended", "required"] },
+        "complexity": { "enum": ["very_low", "low", "moderate"] }
+      }
+    },
+    "followUp": {
+      "type": "object",
+      "required": ["date", "completed", "rpe", "pain", "fatigue", "mood", "caregiverObservation"],
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "day": { "type": "integer", "minimum": 1, "maximum": 14 },
+        "completed": { "type": "boolean" },
+        "rpe": { "type": "number", "minimum": 0, "maximum": 10 },
+        "pain": { "type": "number", "minimum": 0, "maximum": 10 },
+        "fatigue": { "type": "number", "minimum": 0, "maximum": 10 },
+        "mood": { "type": "string" },
+        "caregiverObservation": { "type": "string" }
+      }
+    },
+    "nutritionDailyLog": {
+      "type": "object",
+      "required": ["id", "clientId", "prescriptionId", "date", "goals"],
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "prescriptionId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "goals": { "type": "array", "items": { "type": "object", "required": ["goalId", "completed"], "properties": { "goalId": { "type": "string" }, "completed": { "type": "boolean" } }, "additionalProperties": false } },
+        "meals": { "type": "object", "additionalProperties": { "type": "boolean" } },
+        "water": { "type": ["number", "null"], "minimum": 0 },
+        "sugarSweetenedBeverages": { "type": ["number", "null"], "minimum": 0 },
+        "caregiverNote": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "report": {
+      "type": "object",
+      "required": ["id", "clientId", "assessmentId", "type", "generatedAt", "ruleVersions"],
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "assessmentId": { "type": "string" },
+        "prescriptionId": { "type": ["string", "null"] },
+        "type": { "enum": ["professional", "client", "caregiver", "institution"] },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "ruleVersions": { "type": "object", "additionalProperties": { "type": "string" } },
+        "aiVersion": { "type": ["string", "null"] },
+        "professionalApproval": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "careEvent": {
+      "type": "object",
+      "required": ["id", "clientId", "type", "timestamp", "actor"],
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "type": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "actor": { "enum": ["CLIENT", "CAREGIVER", "AI", "PROFESSIONAL", "SYSTEM"] },
+        "metadata": { "type": "object", "additionalProperties": true }
+      }
+    }
+  }
+}
